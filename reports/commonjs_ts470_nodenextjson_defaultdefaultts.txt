@@ -1,0 +1,53 @@
+package type: commonjs
+typescript code file: src/default.default.ts
+typescript project file: projects/nodenext.json
+status: Failed at TypeScript transpilation
+
+
+src/default.default.ts
+-------------------------------------------------
+import something from 'fluent-json-schema'
+
+const S = something.default
+
+if (typeof S !== 'object') {
+  throw new Error('Expected an object.')
+}
+if (typeof S.object !== 'function') {
+  throw new Error('Almost perfect... but not quite.')
+}
+
+
+projects/nodenext.json
+-------------------------------------------------
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2020"
+  }
+}
+
+
+Transpiled file
+-------------------------------------------------
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fluent_json_schema_1 = require("fluent-json-schema");
+const S = fluent_json_schema_1.default.default;
+if (typeof S !== 'object') {
+    throw new Error('Expected an object.');
+}
+if (typeof S.object !== 'function') {
+    throw new Error('Almost perfect... but not quite.');
+}
+
+
+TypeScript transpilation 
+-------------------------------------------------
+code.ts(8,14): error TS2339: Property 'object' does not exist on type 'never'.
+
+

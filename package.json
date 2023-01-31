@@ -1,0 +1,25 @@
+{
+  "name": "typescript-is-love-typescript-is-life",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "node start.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "typescript",
+    "test",
+    "compiler",
+    "options"
+  ],
+  "author": "Giacomo Gregoletto",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^11.1.0"
+  },
+  "devDependencies": {
+    "standard": "^17.0.0"
+  }
+}

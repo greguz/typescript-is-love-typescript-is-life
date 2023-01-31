@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "noEmitOnError": false,
+    "outDir": "build",
+    "removeComments": false,
+    "skipLibCheck": false,
+    "sourceMap": false,
+    "strict": false,
+    "target": "ES2020",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "useUnknownInCatchVariables": false
+  },
+  "exclude": [
+    "./node_modules",
+  ],
+  "include": [
+    "./src/**/*.ts"
+  ]
+}
