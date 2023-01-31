@@ -1,7 +1,35 @@
 package type: module
 typescript code file: src/star.ts
 typescript project file: projects/nodenext.json
+typescript version: ~4.7.0
 status: Failed at TypeScript transpilation
+
+
+package.json
+-------------------------------------------------
+{
+  "name": "typescript-is-love-typescript-is-life",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "node start.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "typescript",
+    "test",
+    "compiler",
+    "options"
+  ],
+  "author": "Giacomo Gregoletto",
+  "license": "MIT",
+  "dependencies": {
+    "fluent-json-schema": "^4.0.0",
+    "typescript": "~4.7.0"
+  }
+}
 
 
 src/star.ts
@@ -46,7 +74,7 @@ console.log(S.object().additionalProperties(true).valueOf());
 
 TypeScript transpilation 
 -------------------------------------------------
-code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof import("/home/greguz/dev/typescript-is-love-typescript-is-life/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
-code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof import("/home/greguz/dev/typescript-is-love-typescript-is-life/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof fluentSchema'.
+code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof fluentSchema'.
 
 

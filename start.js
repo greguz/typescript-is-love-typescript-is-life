@@ -29,21 +29,39 @@ fs.ensureDirSync(buildDir)
 fs.ensureDirSync(reportsDir)
 
 for (const tsVersion of tsVersions) {
-  fs.emptyDirSync(buildDir)
+  for (const type of types) {
+    fs.emptyDirSync(buildDir)
 
-  run('npm', ['install', `typescript@${tsVersion}`], {
-    cwd: buildDir
-  })
+    mapJsonFile(
+      path.join(rootDir, 'package.json'),
+      path.join(buildDir, 'package.json'),
+      data => {
+        data.type = type
+        data.dependencies = {}
+        data.devDependencies = undefined
+      },
+      { spaces: 2 }
+    )
 
-  if (dependencies.length > 0) {
-    run('npm', ['install', ...dependencies], {
+    run('npm', ['install', `typescript@${tsVersion}`], {
       cwd: buildDir
     })
-  }
 
-  for (const projectFile of scanDir(projectsDir)) {
-    for (const srcFile of scanDir(srcDir)) {
-      for (const type of types) {
+    if (dependencies.length > 0) {
+      run('npm', ['install', ...dependencies], {
+        cwd: buildDir
+      })
+    }
+
+    // Apply patch for this PR
+    // https://github.com/fastify/fluent-json-schema/pull/199/
+    fs.copySync(
+      path.join(rootDir, 'FluentJSONSchema.d.ts'),
+      path.join(buildDir, 'node_modules/fluent-json-schema/types/FluentJSONSchema.d.ts')
+    )
+
+    for (const projectFile of scanDir(projectsDir)) {
+      for (const srcFile of scanDir(srcDir)) {
         const tsConfig = fs.readJsonSync(projectFile)
 
         const tsModule = tsConfig.compilerOptions.module.toLowerCase() === 'commonjs'
@@ -73,17 +91,6 @@ for (const tsVersion of tsVersions) {
           path.join(buildDir, 'tsconfig.json'),
           data => {
             data.include = ['./code.ts']
-          },
-          { spaces: 2 }
-        )
-
-        mapJsonFile(
-          path.join(rootDir, 'package.json'),
-          path.join(buildDir, 'package.json'),
-          data => {
-            data.type = type
-            data.dependencies = {}
-            data.devDependencies = undefined
           },
           { spaces: 2 }
         )
@@ -118,9 +125,14 @@ for (const tsVersion of tsVersions) {
         report += `package type: ${type}${EOL}`
         report += `typescript code file: ${srcLabel}${EOL}`
         report += `typescript project file: ${projectLabel}${EOL}`
+        report += `typescript version: ${tsVersion}${EOL}`
         report += `status: ${status}${EOL}`
         report += EOL
         report += EOL
+
+        report += 'package.json' + EOL
+        report += '-------------------------------------------------' + EOL
+        report += fs.readFileSync(path.join(buildDir, 'package.json')) + EOL + EOL
 
         report += srcLabel + EOL
         report += '-------------------------------------------------' + EOL
