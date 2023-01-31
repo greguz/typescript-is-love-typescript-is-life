@@ -1,0 +1,52 @@
+package type: module
+typescript code file: src/default.ts
+typescript project file: projects/nodenext.json
+status: Failed at TypeScript transpilation
+
+
+src/default.ts
+-------------------------------------------------
+import S from 'fluent-json-schema'
+
+if (typeof S !== 'object') {
+  throw new Error('Expected an object.')
+}
+if (typeof S.object !== 'function') {
+  throw new Error('Almost perfect... but not quite.')
+}
+
+console.log(S.object().additionalProperties(true).valueOf())
+
+
+projects/nodenext.json
+-------------------------------------------------
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2020"
+  }
+}
+
+
+Transpiled file
+-------------------------------------------------
+import S from 'fluent-json-schema';
+if (typeof S !== 'object') {
+    throw new Error('Expected an object.');
+}
+if (typeof S.object !== 'function') {
+    throw new Error('Almost perfect... but not quite.');
+}
+console.log(S.object().additionalProperties(true).valueOf());
+
+
+TypeScript transpilation 
+-------------------------------------------------
+code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof import("/home/greguz/dev/typescript-is-love-typescript-is-life/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof import("/home/greguz/dev/typescript-is-love-typescript-is-life/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+
+

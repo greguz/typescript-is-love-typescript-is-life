@@ -25,27 +25,43 @@ const types = [
   'module'
 ]
 
+fs.ensureDirSync(buildDir)
 fs.ensureDirSync(reportsDir)
 
-fs.ensureDirSync(buildDir)
-fs.emptyDirSync(buildDir)
+for (const tsVersion of tsVersions) {
+  fs.emptyDirSync(buildDir)
 
-for (const projectFile of scanDir(projectsDir)) {
-  for (const srcFile of scanDir(srcDir)) {
-    for (const tsVersion of tsVersions) {
+  run('npm', ['install', `typescript@${tsVersion}`], {
+    cwd: buildDir
+  })
+
+  if (dependencies.length > 0) {
+    run('npm', ['install', ...dependencies], {
+      cwd: buildDir
+    })
+  }
+
+  for (const projectFile of scanDir(projectsDir)) {
+    for (const srcFile of scanDir(srcDir)) {
       for (const type of types) {
+        const tsConfig = fs.readJsonSync(projectFile)
+
+        const tsModule = tsConfig.compilerOptions.module.toLowerCase() === 'commonjs'
+          ? 'csj'
+          : 'esm'
+
+        const nodeModule = type === 'module'
+          ? 'esm'
+          : 'csj'
+
+        if (tsModule !== nodeModule) {
+          continue
+        }
+
         const srcLabel = path.relative(rootDir, srcFile)
         const projectLabel = path.relative(rootDir, projectFile)
 
-        const hash = getASCIILabel(
-          type,
-          `ts${tsVersion}`,
-          path.basename(projectFile),
-          path.basename(srcFile)
-        )
-
         console.log(`running ${srcLabel} with ${projectLabel} on TypeScript ${tsVersion} with type ${type}...`)
-        console.log(`hash: ${hash}`)
 
         fs.copySync(
           srcFile,
@@ -72,16 +88,6 @@ for (const projectFile of scanDir(projectsDir)) {
           { spaces: 2 }
         )
 
-        run('npm', ['install', `typescript@${tsVersion}`], {
-          cwd: buildDir
-        })
-
-        if (dependencies.length > 0) {
-          run('npm', ['install', ...dependencies], {
-            cwd: buildDir
-          })
-        }
-
         let status = 'Unknown'
 
         const tsc = run('npx', ['tsc', '-p', 'tsconfig.json'], {
@@ -105,7 +111,7 @@ for (const projectFile of scanDir(projectsDir)) {
           status = 'Failed at TypeScript transpilation'
         }
 
-        // CommonJS
+        console.log(status)
 
         let report = ''
 
@@ -150,8 +156,18 @@ for (const projectFile of scanDir(projectsDir)) {
           report += EOL
         }
 
+        const reportFilename = getASCIILabel(
+          status === 'Success' ? 'ok' : 'ko',
+          type,
+          `ts${tsVersion}`,
+          path.basename(projectFile),
+          path.basename(srcFile)
+        ) + '.txt'
+
+        console.log(`report file: ${reportFilename}`)
+
         fs.writeFileSync(
-          path.join(reportsDir, `${hash}.txt`),
+          path.join(reportsDir, reportFilename),
           report
         )
       }

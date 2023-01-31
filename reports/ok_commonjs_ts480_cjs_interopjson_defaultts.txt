@@ -1,0 +1,63 @@
+package type: commonjs
+typescript code file: src/default.ts
+typescript project file: projects/cjs_interop.json
+status: Success
+
+
+src/default.ts
+-------------------------------------------------
+import S from 'fluent-json-schema'
+
+if (typeof S !== 'object') {
+  throw new Error('Expected an object.')
+}
+if (typeof S.object !== 'function') {
+  throw new Error('Almost perfect... but not quite.')
+}
+
+console.log(S.object().additionalProperties(true).valueOf())
+
+
+projects/cjs_interop.json
+-------------------------------------------------
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2020"
+  }
+}
+
+
+Transpiled file
+-------------------------------------------------
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fluent_json_schema_1 = __importDefault(require("fluent-json-schema"));
+if (typeof fluent_json_schema_1.default !== 'object') {
+    throw new Error('Expected an object.');
+}
+if (typeof fluent_json_schema_1.default.object !== 'function') {
+    throw new Error('Almost perfect... but not quite.');
+}
+console.log(fluent_json_schema_1.default.object().additionalProperties(true).valueOf());
+
+
+TypeScript transpilation 
+-------------------------------------------------
+
+Node.js execution 
+-------------------------------------------------
+{
+  '$schema': 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  additionalProperties: true
+}
+
+

@@ -1,4 +1,4 @@
-import S from 'fluent-json-schema'
+import * as S from 'fluent-json-schema'
 
 if (typeof S !== 'object') {
   throw new Error('Expected an object.')
