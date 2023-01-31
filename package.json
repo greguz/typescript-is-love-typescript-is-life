@@ -17,6 +17,7 @@
   "author": "Giacomo Gregoletto",
   "license": "MIT",
   "dependencies": {
+    "deepmerge": "^4.3.0",
     "fs-extra": "^11.1.0"
   },
   "devDependencies": {

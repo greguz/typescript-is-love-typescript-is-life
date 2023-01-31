@@ -258,34 +258,6 @@ export interface S extends BaseSchema<S> {
   FORMATS: FORMATS;
 }
 
-export declare const string: S['string']
-export declare const number: S['number']
-export declare const integer: S['integer']
-export declare const boolean: S['boolean']
-export declare const array: S['array']
-export declare const object: S['object']
-// export declare const null: S['null']
-export declare const mixed: S['mixed']
-export declare const raw: S['raw']
-export declare const id: S['id']
-export declare const title: S['title']
-export declare const description: S['description']
-export declare const examples: S['examples']
-export declare const ref: S['ref']
-// export declare const enum: S['enum']
-// export declare const const: S['const']
-// export declare const default: S['default']
-export declare const required: S['required']
-export declare const ifThen: S['ifThen']
-export declare const ifThenElse: S['ifThenElse']
-export declare const not: S['not']
-export declare const anyOf: S['anyOf']
-export declare const allOf: S['allOf']
-export declare const oneOf: S['oneOf']
-export declare const readOnly: S['readOnly']
-export declare const writeOnly: S['writeOnly']
-export declare const deprecated: S['deprecated']
-
 export type ExtendedSchema = Pick<ObjectSchema, "isFluentSchema" | "extend">;
 
 export function withOptions<T>(options: SchemaOptions): T;

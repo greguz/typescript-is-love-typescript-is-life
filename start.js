@@ -1,11 +1,12 @@
+import merge from 'deepmerge'
 import fs from 'fs-extra'
 import { spawnSync } from 'node:child_process'
-import { EOL } from 'node:os'
+import { createHash } from 'node:crypto'
+import { EOL, tmpdir } from 'node:os'
 import * as path from 'node:path'
 
 const rootDir = process.cwd()
 
-const buildDir = path.join(rootDir, 'build')
 const projectsDir = path.join(rootDir, 'projects')
 const reportsDir = path.join(rootDir, 'reports')
 const srcDir = path.join(rootDir, 'src')
@@ -25,41 +26,10 @@ const types = [
   'module'
 ]
 
-fs.ensureDirSync(buildDir)
 fs.ensureDirSync(reportsDir)
 
 for (const tsVersion of tsVersions) {
   for (const type of types) {
-    fs.emptyDirSync(buildDir)
-
-    mapJsonFile(
-      path.join(rootDir, 'package.json'),
-      path.join(buildDir, 'package.json'),
-      data => {
-        data.type = type
-        data.dependencies = {}
-        data.devDependencies = undefined
-      },
-      { spaces: 2 }
-    )
-
-    run('npm', ['install', `typescript@${tsVersion}`], {
-      cwd: buildDir
-    })
-
-    if (dependencies.length > 0) {
-      run('npm', ['install', ...dependencies], {
-        cwd: buildDir
-      })
-    }
-
-    // Apply patch for this PR
-    // https://github.com/fastify/fluent-json-schema/pull/199/
-    fs.copySync(
-      path.join(rootDir, 'FluentJSONSchema.d.ts'),
-      path.join(buildDir, 'node_modules/fluent-json-schema/types/FluentJSONSchema.d.ts')
-    )
-
     for (const projectFile of scanDir(projectsDir)) {
       for (const srcFile of scanDir(srcDir)) {
         const tsConfig = fs.readJsonSync(projectFile)
@@ -73,6 +43,7 @@ for (const tsVersion of tsVersions) {
           : 'csj'
 
         if (tsModule !== nodeModule) {
+          // Ignore useless cases
           continue
         }
 
@@ -81,17 +52,53 @@ for (const tsVersion of tsVersions) {
 
         console.log(`running ${srcLabel} with ${projectLabel} on TypeScript ${tsVersion} with type ${type}...`)
 
+        const hash = createHash('md5')
+          .update(type + tsVersion + srcLabel + projectLabel)
+          .digest('hex')
+
+        const buildDir = path.join(tmpdir(), hash)
+        console.log(`build dir: ${buildDir}`)
+
+        fs.ensureDirSync(buildDir)
+        removeButLeaveCache(buildDir)
+
+        mapJsonFile(
+          path.join(rootDir, 'package.json'),
+          path.join(buildDir, 'package.json'),
+          data => {
+            data.type = type
+            data.dependencies = {}
+            data.devDependencies = undefined
+          },
+          { spaces: 2 }
+        )
+
+        run('npm', ['install', `typescript@${tsVersion}`, ...dependencies], {
+          cwd: buildDir
+        })
+
+        // Apply hacky fix
+        fs.copySync(
+          path.join(rootDir, 'FluentJSONSchema.proposal.d.ts'),
+          path.join(buildDir, 'node_modules/fluent-json-schema/types/FluentJSONSchema.d.ts')
+        )
+        fs.copySync(
+          path.join(rootDir, 'FluentJSONSchema.proposal.js'),
+          path.join(buildDir, 'node_modules/fluent-json-schema/src/FluentJSONSchema.js')
+        )
+
         fs.copySync(
           srcFile,
           path.join(buildDir, 'code.ts')
         )
 
-        mapJsonFile(
-          projectFile,
+        fs.writeJsonSync(
           path.join(buildDir, 'tsconfig.json'),
-          data => {
-            data.include = ['./code.ts']
-          },
+          merge.all([
+            fs.readJsonSync(path.join(rootDir, 'tsconfig.json')),
+            fs.readJsonSync(projectFile),
+            { include: ['./code.ts'] }
+          ]),
           { spaces: 2 }
         )
 
@@ -118,53 +125,47 @@ for (const tsVersion of tsVersions) {
           status = 'Failed at TypeScript transpilation'
         }
 
-        console.log(status)
+        console.log(`status: ${status}`)
 
         let report = ''
 
         report += `package type: ${type}${EOL}`
-        report += `typescript code file: ${srcLabel}${EOL}`
-        report += `typescript project file: ${projectLabel}${EOL}`
         report += `typescript version: ${tsVersion}${EOL}`
+        report += `typescript project: ${projectLabel}${EOL}`
+        report += `typescript code: ${srcLabel}${EOL}`
         report += `status: ${status}${EOL}`
         report += EOL
         report += EOL
 
-        report += 'package.json' + EOL
+        report += `package.json${EOL}`
         report += '-------------------------------------------------' + EOL
         report += fs.readFileSync(path.join(buildDir, 'package.json')) + EOL + EOL
 
-        report += srcLabel + EOL
+        report += `tsconfig.json (${projectLabel})${EOL}`
+        report += '-------------------------------------------------' + EOL
+        report += fs.readFileSync(path.join(buildDir, 'tsconfig.json')) + EOL + EOL
+
+        report += `code.ts (${srcLabel})${EOL}`
         report += '-------------------------------------------------' + EOL
         report += fs.readFileSync(srcFile) + EOL + EOL
-
-        report += projectLabel + EOL
-        report += '-------------------------------------------------' + EOL
-        report += fs.readFileSync(projectFile) + EOL + EOL
 
         report += `Transpiled file${EOL}`
         report += '-------------------------------------------------' + EOL
         report += fs.readFileSync(path.join(buildDir, 'code.js')) + EOL + EOL
 
-        report += `TypeScript transpilation ${EOL}`
-        report += '-------------------------------------------------' + EOL
-        if (tsc.stdout.length) {
+        if (tsc.status !== 0) {
+          report += `TypeScript transpilation ${EOL}`
+          report += '-------------------------------------------------' + EOL
           report += tsc.stdout + EOL
-        }
-        if (tsc.stderr.length) {
           report += tsc.stderr + EOL
+          report += EOL
         }
-        report += EOL
 
         if (node) {
           report += `Node.js execution ${EOL}`
           report += '-------------------------------------------------' + EOL
-          if (node.stdout.length) {
-            report += node.stdout + EOL
-          }
-          if (node.stderr.length) {
-            report += node.stderr + EOL
-          }
+          report += node.stdout + EOL
+          report += node.stderr + EOL
           report += EOL
         }
 
@@ -172,16 +173,18 @@ for (const tsVersion of tsVersions) {
           status === 'Success' ? 'ok' : 'ko',
           type,
           `ts${tsVersion}`,
-          path.basename(projectFile),
-          path.basename(srcFile)
+          getFilenameOnly(projectFile),
+          getFilenameOnly(srcFile)
         ) + '.txt'
 
-        console.log(`report file: ${reportFilename}`)
+        console.log(`report: ${reportFilename}${EOL}`)
 
         fs.writeFileSync(
           path.join(reportsDir, reportFilename),
           report
         )
+
+        // fs.removeSync(buildDir)
       }
     }
   }
@@ -232,8 +235,30 @@ function mapJsonFile (sourceFile, targetFile, callback, options) {
  * Filepaths iterable of a dir.
  */
 function * scanDir (dir) {
-  const files = fs.readdirSync(dir)
-  for (const file of files) {
-    yield path.join(dir, file)
+  const items = fs.readdirSync(dir)
+  for (const item of items) {
+    yield path.join(dir, item)
+  }
+}
+
+/**
+ *
+ */
+function getFilenameOnly (file) {
+  return path.basename(file, path.extname(file))
+}
+
+/**
+ *
+ */
+function removeButLeaveCache (dir) {
+  for (const item of fs.readdirSync(dir)) {
+    if (
+      item !== 'node_modules' &&
+      item !== 'package.json' &&
+      item !== 'package-lock.json'
+    ) {
+      fs.removeSync(path.join(dir, item))
+    }
   }
 }

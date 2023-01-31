@@ -1,7 +1,7 @@
 package type: commonjs
-typescript code file: src/star.ts
-typescript project file: projects/cjs_interop.json
 typescript version: ~4.7.0
+typescript project: projects/cjs_interop.json
+typescript code: src/star.ts
 status: Failed at TypeScript transpilation
 
 
@@ -32,7 +32,33 @@ package.json
 }
 
 
-src/star.ts
+tsconfig.json (projects/cjs_interop.json)
+-------------------------------------------------
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noEmitOnError": false,
+    "removeComments": false,
+    "skipLibCheck": false,
+    "sourceMap": false,
+    "strict": false,
+    "target": "ES2020",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "./code.ts"
+  ]
+}
+
+
+code.ts (src/star.ts)
 -------------------------------------------------
 import * as S from 'fluent-json-schema'
 
@@ -44,20 +70,6 @@ if (typeof S.object !== 'function') {
 }
 
 console.log(S.object().additionalProperties(true).valueOf())
-
-
-projects/cjs_interop.json
--------------------------------------------------
-{
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "target": "ES2020"
-  }
-}
 
 
 Transpiled file
@@ -99,7 +111,8 @@ console.log(S.object().additionalProperties(true).valueOf());
 
 TypeScript transpilation 
 -------------------------------------------------
-code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof fluentSchema'.
-code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof fluentSchema'.
+code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof import("/tmp/b0232387e057eea6154b90a1dee7df91/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof import("/tmp/b0232387e057eea6154b90a1dee7df91/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+
 
 

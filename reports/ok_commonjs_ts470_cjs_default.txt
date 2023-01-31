@@ -1,7 +1,7 @@
 package type: commonjs
-typescript code file: src/default.ts
-typescript project file: projects/cjs.json
-typescript version: ~4.8.0
+typescript version: ~4.7.0
+typescript project: projects/cjs.json
+typescript code: src/default.ts
 status: Success
 
 
@@ -27,12 +27,38 @@ package.json
   "license": "MIT",
   "dependencies": {
     "fluent-json-schema": "^4.0.0",
-    "typescript": "~4.8.0"
+    "typescript": "~4.7.0"
   }
 }
 
 
-src/default.ts
+tsconfig.json (projects/cjs.json)
+-------------------------------------------------
+{
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noEmitOnError": false,
+    "removeComments": false,
+    "skipLibCheck": false,
+    "sourceMap": false,
+    "strict": false,
+    "target": "ES2020",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "./code.ts"
+  ]
+}
+
+
+code.ts (src/default.ts)
 -------------------------------------------------
 import S from 'fluent-json-schema'
 
@@ -44,20 +70,6 @@ if (typeof S.object !== 'function') {
 }
 
 console.log(S.object().additionalProperties(true).valueOf())
-
-
-projects/cjs.json
--------------------------------------------------
-{
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "esModuleInterop": false,
-    "forceConsistentCasingInFileNames": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "target": "ES2020"
-  }
-}
 
 
 Transpiled file
@@ -74,9 +86,6 @@ if (typeof fluent_json_schema_1.default.object !== 'function') {
 console.log(fluent_json_schema_1.default.object().additionalProperties(true).valueOf());
 
 
-TypeScript transpilation 
--------------------------------------------------
-
 Node.js execution 
 -------------------------------------------------
 {
@@ -84,5 +93,6 @@ Node.js execution
   type: 'object',
   additionalProperties: true
 }
+
 
 

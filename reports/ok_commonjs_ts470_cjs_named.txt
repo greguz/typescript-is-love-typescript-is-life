@@ -1,8 +1,8 @@
 package type: commonjs
-typescript code file: src/star.ts
-typescript project file: projects/cjs.json
 typescript version: ~4.7.0
-status: Failed at TypeScript transpilation
+typescript project: projects/cjs.json
+typescript code: src/named.ts
+status: Success
 
 
 package.json
@@ -32,9 +32,35 @@ package.json
 }
 
 
-src/star.ts
+tsconfig.json (projects/cjs.json)
 -------------------------------------------------
-import * as S from 'fluent-json-schema'
+{
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noEmitOnError": false,
+    "removeComments": false,
+    "skipLibCheck": false,
+    "sourceMap": false,
+    "strict": false,
+    "target": "ES2020",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "./code.ts"
+  ]
+}
+
+
+code.ts (src/named.ts)
+-------------------------------------------------
+import { S } from 'fluent-json-schema'
 
 if (typeof S !== 'object') {
   throw new Error('Expected an object.')
@@ -46,37 +72,27 @@ if (typeof S.object !== 'function') {
 console.log(S.object().additionalProperties(true).valueOf())
 
 
-projects/cjs.json
--------------------------------------------------
-{
-  "extends": "../tsconfig.json",
-  "compilerOptions": {
-    "esModuleInterop": false,
-    "forceConsistentCasingInFileNames": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "target": "ES2020"
-  }
-}
-
-
 Transpiled file
 -------------------------------------------------
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const S = require("fluent-json-schema");
-if (typeof S !== 'object') {
+const fluent_json_schema_1 = require("fluent-json-schema");
+if (typeof fluent_json_schema_1.S !== 'object') {
     throw new Error('Expected an object.');
 }
-if (typeof S.object !== 'function') {
+if (typeof fluent_json_schema_1.S.object !== 'function') {
     throw new Error('Almost perfect... but not quite.');
 }
-console.log(S.object().additionalProperties(true).valueOf());
+console.log(fluent_json_schema_1.S.object().additionalProperties(true).valueOf());
 
 
-TypeScript transpilation 
+Node.js execution 
 -------------------------------------------------
-code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof fluentSchema'.
-code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof fluentSchema'.
+{
+  '$schema': 'http://json-schema.org/draft-07/schema#',
+  type: 'object',
+  additionalProperties: true
+}
+
 
 
