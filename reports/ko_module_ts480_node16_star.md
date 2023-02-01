@@ -1,0 +1,102 @@
+# ko_module_ts480_node16_star
+
+**Status**: Failed at TypeScript transpilation
+
+- **Build dir**: /tmp/tiltil/c708eb40ae50e5fc7de23a946cb45fd9
+- **Package type**: module
+- **TypeScript version**: ~4.8.0
+- **TypeScript project**: projects/node16.json
+- **TypeScript code**: src/star.ts
+
+## package.json
+
+```json
+{
+  "name": "typescript-is-love-typescript-is-life",
+  "private": true,
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "node start.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "typescript",
+    "test",
+    "compiler",
+    "options"
+  ],
+  "author": "Giacomo Gregoletto",
+  "license": "MIT",
+  "dependencies": {
+    "fluent-json-schema": "^4.0.0",
+    "typescript": "~4.8.0"
+  }
+}
+```
+
+## tsconfig.json (projects/node16.json)
+
+```json
+{
+  "compilerOptions": {
+    "esModuleInterop": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "noEmitOnError": false,
+    "removeComments": false,
+    "skipLibCheck": false,
+    "sourceMap": false,
+    "strict": false,
+    "target": "ES2020",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ],
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "./code.ts"
+  ]
+}
+```
+
+## code.ts (src/star.ts)
+
+```typescript
+import * as S from 'fluent-json-schema'
+
+if (typeof S !== 'object') {
+  throw new Error('Expected an object.')
+}
+if (typeof S.object !== 'function') {
+  throw new Error('Almost perfect... but not quite.')
+}
+
+console.log(S.object().additionalProperties(true).valueOf())
+```
+
+## code.js (transpiled file)
+
+```javascript
+import * as S from 'fluent-json-schema';
+if (typeof S !== 'object') {
+    throw new Error('Expected an object.');
+}
+if (typeof S.object !== 'function') {
+    throw new Error('Almost perfect... but not quite.');
+}
+console.log(S.object().additionalProperties(true).valueOf());
+```
+
+## TypeScript transpilation
+
+```
+code.ts(6,14): error TS2339: Property 'object' does not exist on type 'typeof import("/tmp/tiltil/c708eb40ae50e5fc7de23a946cb45fd9/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+code.ts(10,15): error TS2339: Property 'object' does not exist on type 'typeof import("/tmp/tiltil/c708eb40ae50e5fc7de23a946cb45fd9/node_modules/fluent-json-schema/types/FluentJSONSchema")'.
+
+
+```
+

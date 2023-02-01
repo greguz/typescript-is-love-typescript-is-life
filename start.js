@@ -27,6 +27,7 @@ const types = [
 ]
 
 fs.ensureDirSync(reportsDir)
+fs.emptyDirSync(reportsDir)
 
 for (const tsVersion of tsVersions) {
   for (const type of types) {
@@ -56,7 +57,7 @@ for (const tsVersion of tsVersions) {
           .update(type + tsVersion + srcLabel + projectLabel)
           .digest('hex')
 
-        const buildDir = path.join(tmpdir(), hash)
+        const buildDir = path.join(tmpdir(), 'tiltil', hash)
         console.log(`build dir: ${buildDir}`)
 
         fs.ensureDirSync(buildDir)
@@ -127,58 +128,77 @@ for (const tsVersion of tsVersions) {
 
         console.log(`status: ${status}`)
 
-        let report = ''
-
-        report += `package type: ${type}${EOL}`
-        report += `typescript version: ${tsVersion}${EOL}`
-        report += `typescript project: ${projectLabel}${EOL}`
-        report += `typescript code: ${srcLabel}${EOL}`
-        report += `status: ${status}${EOL}`
-        report += EOL
-        report += EOL
-
-        report += `package.json${EOL}`
-        report += '-------------------------------------------------' + EOL
-        report += fs.readFileSync(path.join(buildDir, 'package.json')) + EOL + EOL
-
-        report += `tsconfig.json (${projectLabel})${EOL}`
-        report += '-------------------------------------------------' + EOL
-        report += fs.readFileSync(path.join(buildDir, 'tsconfig.json')) + EOL + EOL
-
-        report += `code.ts (${srcLabel})${EOL}`
-        report += '-------------------------------------------------' + EOL
-        report += fs.readFileSync(srcFile) + EOL + EOL
-
-        report += `Transpiled file${EOL}`
-        report += '-------------------------------------------------' + EOL
-        report += fs.readFileSync(path.join(buildDir, 'code.js')) + EOL + EOL
-
-        if (tsc.status !== 0) {
-          report += `TypeScript transpilation ${EOL}`
-          report += '-------------------------------------------------' + EOL
-          report += tsc.stdout + EOL
-          report += tsc.stderr + EOL
-          report += EOL
-        }
-
-        if (node) {
-          report += `Node.js execution ${EOL}`
-          report += '-------------------------------------------------' + EOL
-          report += node.stdout + EOL
-          report += node.stderr + EOL
-          report += EOL
-        }
-
-        const reportFilename = getASCIILabel(
+        const reportCode = getASCIILabel(
           status === 'Success' ? 'ok' : 'ko',
           type,
           `ts${tsVersion}`,
           getFilenameOnly(projectFile),
           getFilenameOnly(srcFile)
-        ) + '.txt'
+        )
 
+        let report = ''
+
+        report += `# ${reportCode}${EOL}`
+        report += EOL
+        report += `**Status**: ${status}${EOL}`
+        report += EOL
+        report += `- **Build dir**: ${buildDir}${EOL}`
+        report += `- **Package type**: ${type}${EOL}`
+        report += `- **TypeScript version**: ${tsVersion}${EOL}`
+        report += `- **TypeScript project**: ${projectLabel}${EOL}`
+        report += `- **TypeScript code**: ${srcLabel}${EOL}`
+        report += EOL
+
+        report += `## package.json${EOL}`
+        report += EOL
+        report += '```json' + EOL
+        report += fs.readFileSync(path.join(buildDir, 'package.json'))
+        report += '```' + EOL
+        report += EOL
+
+        report += `## tsconfig.json (${projectLabel})${EOL}`
+        report += EOL
+        report += '```json' + EOL
+        report += fs.readFileSync(path.join(buildDir, 'tsconfig.json'))
+        report += '```' + EOL
+        report += EOL
+
+        report += `## code.ts (${srcLabel})${EOL}`
+        report += EOL
+        report += '```typescript' + EOL
+        report += fs.readFileSync(srcFile)
+        report += '```' + EOL
+        report += EOL
+
+        report += `## code.js (transpiled file)${EOL}`
+        report += EOL
+        report += '```javascript' + EOL
+        report += fs.readFileSync(path.join(buildDir, 'code.js'))
+        report += '```' + EOL
+        report += EOL
+
+        if (tsc.status !== 0) {
+          report += `## TypeScript transpilation${EOL}`
+          report += EOL
+          report += '```' + EOL
+          report += tsc.stdout + EOL
+          report += tsc.stderr + EOL
+          report += '```' + EOL
+          report += EOL
+        }
+
+        if (node) {
+          report += `## Node.js execution ${EOL}`
+          report += EOL
+          report += '```' + EOL
+          report += node.stdout + EOL
+          report += node.stderr + EOL
+          report += '```' + EOL
+          report += EOL
+        }
+
+        const reportFilename = reportCode + '.md'
         console.log(`report: ${reportFilename}${EOL}`)
-
         fs.writeFileSync(
           path.join(reportsDir, reportFilename),
           report
